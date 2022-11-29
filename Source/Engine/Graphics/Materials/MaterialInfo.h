@@ -577,3 +577,27 @@ API_STRUCT() struct FLAXENGINE_API MaterialInfo
 // The current material info descriptor version used by the material pipeline
 typedef MaterialInfo MaterialInfo10;
 #define MaterialInfo_Version 10
+
+
+struct MaterialInfo11
+{
+    MaterialDomain Domain;
+    MaterialBlendMode BlendMode;
+    MaterialShadingModel ShadingModel;
+    MaterialUsageFlags UsageFlags;
+    MaterialFeaturesFlags FeaturesFlags;
+    MaterialDecalBlendingMode DecalBlendingMode;
+    MaterialTransparentLightingMode TransparentLightingMode;
+    MaterialPostFxLocation PostFxLocation;
+    CullMode CullMode;
+    float MaskThreshold;
+    float OpacityThreshold;
+    TessellationMethod TessellationMode;
+    int32 MaxTessellationFactor;
+    float MinDepth;
+    float MaxDepth;
+    MaterialInfo11()
+    {
+    }
+
+};

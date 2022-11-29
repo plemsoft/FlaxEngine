@@ -24,6 +24,7 @@ public:
         {
             { 18, 19, &Upgrade_18_To_19 },
             { 19, 20, &Upgrade_19_To_20 },
+            { 21, 20, &Downgrade_21_To_20 },
         };
         setup(upgraders, ARRAY_COUNT(upgraders));
     }
@@ -44,6 +45,59 @@ private:
     typedef ShaderStorage::Header20 Header20;
     typedef ShaderStorage::Header19 Header19;
     typedef ShaderStorage::Header18 Header18;
+    typedef ShaderStorage::Header21 Header21;
+
+    static bool Downgrade_21_To_20(AssetMigrationContext& context)
+    {
+        ASSERT(context.Input.SerializedVersion == 21 && context.Output.SerializedVersion == 20);
+
+        // Convert header
+        if (context.Input.CustomData.IsInvalid())
+            return true;
+        auto& oldHeader = *(Header21*)context.Input.CustomData.Get();
+        Header20 newHeader;
+        Platform::MemoryClear(&newHeader, sizeof(newHeader));
+        if (context.Input.Header.TypeName == TEXT("FlaxEngine.ParticleEmitter"))
+        {
+            newHeader.ParticleEmitter.GraphVersion = oldHeader.ParticleEmitter.GraphVersion;
+            newHeader.ParticleEmitter.CustomDataSize = oldHeader.ParticleEmitter.CustomDataSize;
+        }
+        else if (context.Input.Header.TypeName == TEXT("FlaxEngine.Material"))
+        {
+            newHeader.Material.GraphVersion = oldHeader.Material.GraphVersion;
+
+            newHeader.Material.Info.Domain = oldHeader.Material.Info.Domain;
+            newHeader.Material.Info.BlendMode = oldHeader.Material.Info.BlendMode;
+            newHeader.Material.Info.ShadingModel = oldHeader.Material.Info.ShadingModel;
+            newHeader.Material.Info.UsageFlags = oldHeader.Material.Info.UsageFlags;
+            newHeader.Material.Info.FeaturesFlags = oldHeader.Material.Info.FeaturesFlags;
+            newHeader.Material.Info.DecalBlendingMode = oldHeader.Material.Info.DecalBlendingMode;
+            newHeader.Material.Info.TransparentLightingMode = oldHeader.Material.Info.TransparentLightingMode;
+            newHeader.Material.Info.PostFxLocation = oldHeader.Material.Info.PostFxLocation;
+            newHeader.Material.Info.CullMode = oldHeader.Material.Info.CullMode;
+            newHeader.Material.Info.MaskThreshold = oldHeader.Material.Info.MaskThreshold;
+            newHeader.Material.Info.OpacityThreshold = oldHeader.Material.Info.OpacityThreshold;
+            newHeader.Material.Info.TessellationMode = oldHeader.Material.Info.TessellationMode;
+            newHeader.Material.Info.MaxTessellationFactor = oldHeader.Material.Info.MaxTessellationFactor;
+            //float MinDepth;
+            //float MaxDepth;
+
+            //newHeader.Material.Info = oldHeader.Material.Info;
+        }
+        else if (context.Input.Header.TypeName == TEXT("FlaxEngine.Shader"))
+        {
+        }
+        else
+        {
+            LOG(Warning, "Unknown input asset type.");
+            return true;
+        }
+        context.Output.CustomData.Copy(&newHeader);
+
+        // Copy all chunks
+        return CopyChunks(context);
+    }
+
 
     static bool Upgrade_19_To_20(AssetMigrationContext& context)
     {
